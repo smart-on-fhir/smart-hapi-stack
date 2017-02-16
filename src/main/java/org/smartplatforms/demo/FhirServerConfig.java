@@ -11,8 +11,10 @@ import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.commons.lang3.time.DateUtils;
 import org.hibernate.jpa.HibernatePersistenceProvider;
 import org.springframework.beans.factory.annotation.Autowire;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
@@ -22,7 +24,22 @@ import javax.sql.DataSource;
 
 @Configuration
 @EnableTransactionManagement()
+@PropertySource("classpath:application.properties")
 public class FhirServerConfig extends BaseJavaConfigDstu2 {
+
+	@Value("${database.driver}")
+	private String databaseDriver;
+	@Value("${database.url}")
+	private String databaseUrl;
+	@Value("${database.username}")
+	private String databaseUsername;
+	@Value("${database.password}")
+	private String databasePassword;
+
+	@Value("${hibernate.dialect}")
+	private String hibernateDialect;
+	@Value("${hibernate.search.default.indexBase}")
+	private String hibernateSearchDefaultIndexBase;
 
 	/**
 	 * Configure FHIR properties around the the JPA server via this bean
@@ -46,10 +63,10 @@ public class FhirServerConfig extends BaseJavaConfigDstu2 {
 	@Bean(destroyMethod = "close")
 	public DataSource dataSource() {
 		BasicDataSource retVal = new BasicDataSource();
-		retVal.setDriver(new org.apache.derby.jdbc.EmbeddedDriver());
-		retVal.setUrl("jdbc:derby:directory:target/jpaserver_derby_files;create=true");
-		retVal.setUsername("");
-		retVal.setPassword("");
+		retVal.setDriverClassName("org.apache.derby.jdbc.EmbeddedDriver");
+		retVal.setUrl(databaseUrl);
+		retVal.setUsername(databaseUsername);
+		retVal.setPassword(databasePassword);
 		return retVal;
 	}
 
@@ -66,7 +83,7 @@ public class FhirServerConfig extends BaseJavaConfigDstu2 {
 
 	private Properties jpaProperties() {
 		Properties extraProperties = new Properties();
-		extraProperties.put("hibernate.dialect", org.hibernate.dialect.DerbyTenSevenDialect.class.getName());
+		extraProperties.put("hibernate.dialect", hibernateDialect);
 		extraProperties.put("hibernate.format_sql", "true");
 		extraProperties.put("hibernate.show_sql", "false");
 		extraProperties.put("hibernate.hbm2ddl.auto", "update");
@@ -76,7 +93,7 @@ public class FhirServerConfig extends BaseJavaConfigDstu2 {
 		extraProperties.put("hibernate.cache.use_structured_entries", "false");
 		extraProperties.put("hibernate.cache.use_minimal_puts", "false");
 		extraProperties.put("hibernate.search.default.directory_provider", "filesystem");
-		extraProperties.put("hibernate.search.default.indexBase", "target/lucenefiles");
+		extraProperties.put("hibernate.search.default.indexBase", hibernateSearchDefaultIndexBase);
 		extraProperties.put("hibernate.search.lucene_version", "LUCENE_CURRENT");
 		return extraProperties;
 	}
