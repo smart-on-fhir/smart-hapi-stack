@@ -10,6 +10,10 @@ import java.util.Properties;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.commons.lang3.time.DateUtils;
 import org.hibernate.jpa.HibernatePersistenceProvider;
+import org.mitre.oauth2.introspectingfilter.IntrospectingTokenService;
+import org.mitre.oauth2.introspectingfilter.service.IntrospectionConfigurationService;
+import org.mitre.oauth2.introspectingfilter.service.impl.StaticIntrospectionConfigurationService;
+import org.mitre.oauth2.model.RegisteredClient;
 import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -40,6 +44,13 @@ public class FhirServerConfig extends BaseJavaConfigDstu2 {
 	private String hibernateDialect;
 	@Value("${hibernate.search.default.indexBase}")
 	private String hibernateSearchDefaultIndexBase;
+
+	@Value("${oic.introspection.url}")
+	private String introspectionUrl;
+	@Value("${oic.client.id}")
+	private String clientId;
+	@Value("${oic.client.secret}")
+	private String clientSecret;
 
 	/**
 	 * Configure FHIR properties around the the JPA server via this bean
@@ -133,4 +144,22 @@ public class FhirServerConfig extends BaseJavaConfigDstu2 {
 		return retVal;
 	}
 
+	@Bean
+	public IntrospectingTokenService introspectingTokenService() {
+		IntrospectingTokenService introspectingTokenService = new IntrospectingTokenService();
+		introspectingTokenService.setIntrospectionConfigurationService(introspectionConfigurationService());
+		introspectingTokenService.setCacheNonExpiringTokens(true);
+		return introspectingTokenService;
+	}
+
+	@Bean
+	public IntrospectionConfigurationService introspectionConfigurationService() {
+		StaticIntrospectionConfigurationService introspectionConfigurationService = new StaticIntrospectionConfigurationService();
+		introspectionConfigurationService.setIntrospectionUrl(introspectionUrl);
+		RegisteredClient registeredClient = new RegisteredClient();
+		registeredClient.setClientId(clientId);
+		registeredClient.setClientSecret(clientSecret);
+		introspectionConfigurationService.setClientConfiguration(registeredClient);
+		return introspectionConfigurationService;
+	}
 }
