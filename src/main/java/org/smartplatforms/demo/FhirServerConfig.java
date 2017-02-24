@@ -14,6 +14,7 @@ import org.mitre.oauth2.introspectingfilter.IntrospectingTokenService;
 import org.mitre.oauth2.introspectingfilter.service.IntrospectionConfigurationService;
 import org.mitre.oauth2.introspectingfilter.service.impl.StaticIntrospectionConfigurationService;
 import org.mitre.oauth2.model.RegisteredClient;
+import org.smartplatforms.demo.interceptor.OAuthAuthorizationInterceptor;
 import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -141,6 +142,12 @@ public class FhirServerConfig extends BaseJavaConfigDstu2 {
 	public JpaTransactionManager transactionManager(EntityManagerFactory entityManagerFactory) {
 		JpaTransactionManager retVal = new JpaTransactionManager();
 		retVal.setEntityManagerFactory(entityManagerFactory);
+		return retVal;
+	}
+
+	@Bean(autowire = Autowire.BY_TYPE)
+	public IServerInterceptor oAuthAuthorizationInterceptor() {
+		OAuthAuthorizationInterceptor retVal = new OAuthAuthorizationInterceptor();
 		return retVal;
 	}
 
