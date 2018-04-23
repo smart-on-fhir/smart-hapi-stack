@@ -1,0 +1,1 @@
+web: java $JAVA_OPTS -jar hapi-fhir-cli.jar run-server --port $PORT
