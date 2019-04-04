@@ -21,7 +21,7 @@ public class Scope {
 	
 
 	private static final Set<String> writeScopes = new HashSet<String>(Arrays.asList(
-		     new String[] {"read", "*"}
+		     new String[] {"write", "*"}
 		));
 	
 	static Scope parse(String wireFormat) {
